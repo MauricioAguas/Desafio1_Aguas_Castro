@@ -4,17 +4,14 @@ using namespace std;
 
 
 int main() {
-    unsigned char datos[] = {0b10110001, 0b11001010}; // 2 bytes de ejemplo
-    int size = 2;
+    int size;
+    unsigned char* buffer = leerArchivo("C:/Users/57312/Desktop/jhacasky/Universidad/2025-2/Desafio1_Aguas_Castro/Desafio1/Encriptado1.txt", size);
 
-    unsigned char* salida = new unsigned char[size];
-    rotarArregloDerecha(datos, salida, size, 3); // rotar cada byte 3 bits
+    if (buffer != nullptr) {
+        cout << "Archivo leido correctamente. Tamano: " << size << " bytes." << std::endl;
 
-    for (int i = 0; i < size; i++) {
-        cout << "Byte " << i << " rotado: " << (int)salida[i] << endl;
+        delete[] buffer;
     }
-
-    delete[] salida;
     return 0;
 }
 

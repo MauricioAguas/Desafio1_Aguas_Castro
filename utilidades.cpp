@@ -1,5 +1,7 @@
 #include "utilidades.h"
-
+#include <fstream>
+#include <iostream>
+using namespace std;
 // ==================== RLE ====================
 // Descomprime un buffer usando RLE (ternas: [basura][cantidad][caracter])
 char* descomprimirRLE(unsigned char* buffer, int size, int& outSize) {
@@ -33,3 +35,25 @@ void rotarArregloDerecha(unsigned char* in, unsigned char* out, int size, int n)
         out[i] = (b >> n) | (b << (8 - n)); // rotación circular en el byte
     }
 }
+#include "utilidades.h"
+#include <fstream>
+#include <iostream>
+
+unsigned char* leerArchivo(const char* nombre, int& size) {
+    std::ifstream file(nombre, std::ios::binary | std::ios::ate);
+    if (!file.is_open()) {
+        std::cerr << "Error abriendo archivo: " << nombre << std::endl;
+        size = 0;
+        return nullptr;
+    }
+
+    size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    unsigned char* buffer = new unsigned char[size];
+    file.read(reinterpret_cast<char*>(buffer), size);
+    file.close();
+
+    return buffer;
+}
+

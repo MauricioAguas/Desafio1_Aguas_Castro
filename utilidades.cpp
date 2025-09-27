@@ -27,3 +27,9 @@ char* descomprimirRLE(unsigned char* buffer, int size, int& outSize) {
 
     return salida;
 }
+void rotarArregloDerecha(unsigned char* in, unsigned char* out, int size, int n) {
+    for (int i = 0; i < size; i++) {
+        unsigned char b = in[i];
+        out[i] = (b >> n) | (b << (8 - n)); // rotación circular en el byte
+    }
+}

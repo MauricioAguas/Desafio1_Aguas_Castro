@@ -4,18 +4,17 @@ using namespace std;
 
 
 int main() {
-    // Ejemplo: [X][4][A] [Y][3][B] [Z][2][C]
-    unsigned char ejemplo[] = {0, 4, 'A', 0, 3, 'B', 0, 2, 'C'};
-    int size = 9;
+    unsigned char datos[] = {0b10110001, 0b11001010}; // 2 bytes de ejemplo
+    int size = 2;
 
-    int outSize;
-    char* resultado = descomprimirRLE(ejemplo, size, outSize);
+    unsigned char* salida = new unsigned char[size];
+    rotarArregloDerecha(datos, salida, size, 3); // rotar cada byte 3 bits
 
-    for (int i = 0; i < outSize; i++) {
-        cout << resultado[i];
+    for (int i = 0; i < size; i++) {
+        cout << "Byte " << i << " rotado: " << (int)salida[i] << endl;
     }
-    cout << endl;
 
-    delete[] resultado;
+    delete[] salida;
     return 0;
 }
+

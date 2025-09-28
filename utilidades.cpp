@@ -27,92 +27,60 @@ unsigned char* descomprimirRLE(unsigned char* buffer, int size, int& outSize) {
     return salida;
 }
 
-// ==================== LZ78 ====================
-// Descomprime un buffer usando LZ78 (ternas: [indice_bajo][indice_alto][caracter])
+// ==================== LZ78 ITERATIVO SIMPLE ====================
 unsigned char* descomprimirLZ78(unsigned char* buffer, int size, int& outSize) {
+    // Validar que el tamaño sea múltiplo de 3
     if (size % 3 != 0) {
-        cout << "Error: LZ78 data debe ser multiplo de 3 bytes" << endl;
+        cout << "Error: LZ78 data debe ser múltiplo de 3 bytes" << endl;
         outSize = 0;
         return nullptr;
     }
-
-    // Diccionario implementado con dos arrays paralelos
-    char** diccionarioCadenas = new char*[1000];        // Array de punteros a cadenas
-    int* diccionarioLongitudes = new int[1000];         // Array de longitudes correspondientes
-    int numEntradas = 0;
-
-    // Inicializar arrays
-    for (int i = 0; i < 1000; i++) {
-        diccionarioCadenas[i] = nullptr;
-        diccionarioLongitudes[i] = 0;
-    }
-
-    // Buffer resultado (estimacion conservadora: 4x el tamaño)
-    unsigned char* salida = new unsigned char[size * 4];
-    int pos = 0;
-
-    // Procesar cada entrada LZ78
+    
+    // Buffer de salida (estimación conservadora)
+    unsigned char* salida = new unsigned char[size * 3];
+    outSize = 0;
+    
+    // Procesar cada entrada de 3 bytes
     for (int i = 0; i < size; i += 3) {
-        // Leer indice (little endian) y caracter
-        int indice = buffer[i] | (buffer[i + 1] << 8);
-        unsigned char caracter = buffer[i + 2];
-
-        // Si hay prefijo en diccionario
-        if (indice > 0 && indice <= numEntradas) {
-            char* cadenaPrevia = diccionarioCadenas[indice - 1];
-            int longitudPrevia = diccionarioLongitudes[indice - 1];
-
-            // Copiar cadena previa al resultado
-            for (int j = 0; j < longitudPrevia; j++) {
-                salida[pos++] = cadenaPrevia[j];
+        unsigned char separador = buffer[i];     // Primer byte (basura)
+        unsigned char indice = buffer[i + 1];   // Segundo byte (índice)
+        unsigned char caracter = buffer[i + 2]; // Tercer byte (carácter)
+        
+        // Array temporal para la secuencia
+        unsigned char secuencia[500];
+        int secuenciaLen = 0;
+        
+        // Recorrer hacia atrás siguiendo los índices
+        unsigned char indiceActual = indice;
+        while (indiceActual != 0) {
+            // Calcular la posición en el buffer
+            int posicion = (indiceActual * 3) - 3;
+            
+            // Validar posición
+            if (posicion < 0 || posicion + 2 >= size) {
+                delete[] salida;
+                return nullptr;
             }
+            
+            // Obtener carácter y índice anterior
+            unsigned char caracterAnterior = buffer[posicion + 2];
+            unsigned char indiceAnterior = buffer[posicion + 1];
+            
+            // Guardar en secuencia
+            secuencia[secuenciaLen++] = caracterAnterior;
+            indiceActual = indiceAnterior;
         }
-
-        // Agregar nuevo caracter
-        if (caracter != 0) {
-            salida[pos++] = (char)caracter;
+        
+        // Copiar en orden correcto (reverso)
+        for (int j = secuenciaLen - 1; j >= 0; j--) {
+            salida[outSize++] = secuencia[j];
         }
-
-        // Crear nueva entrada en diccionario (si hay caracter valido)
-        if (numEntradas < 1000 && caracter != 0) {
-            int longitudPrefijo = 0;
-            if (indice > 0 && indice <= numEntradas) {
-                longitudPrefijo = diccionarioLongitudes[indice - 1];
-            }
-
-            // Nueva longitud = longitud prefijo + 1 caracter
-            int nuevaLongitud = longitudPrefijo + 1;
-            diccionarioLongitudes[numEntradas] = nuevaLongitud;
-
-            // Reservar memoria para nueva cadena
-            diccionarioCadenas[numEntradas] = new char[nuevaLongitud];
-
-            // Copiar prefijo si existe
-            if (indice > 0 && indice <= numEntradas) {
-                char* cadenaPrevia = diccionarioCadenas[indice - 1];
-                for (int j = 0; j < longitudPrefijo; j++) {
-                    diccionarioCadenas[numEntradas][j] = cadenaPrevia[j];
-                }
-            }
-
-            // Agregar caracter al final
-            diccionarioCadenas[numEntradas][longitudPrefijo] = (char)caracter;
-
-            numEntradas++;
-        }
+        
+        // Agregar carácter actual
+        salida[outSize++] = caracter;
     }
-
-    outSize = pos;
-
-    // Limpiar memoria del diccionario
-    for (int i = 0; i < numEntradas; i++) {
-        if (diccionarioCadenas[i] != nullptr) {
-            delete[] diccionarioCadenas[i];
-        }
-    }
-    delete[] diccionarioCadenas;
-    delete[] diccionarioLongitudes;
-
+    
+    salida[outSize] = '\0';
     return salida;
 }
 

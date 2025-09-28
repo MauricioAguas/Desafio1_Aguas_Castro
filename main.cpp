@@ -1,48 +1,34 @@
 #include <iostream>
 #include "utilidades.h"
+#include "busqueda.h"
+#include <cstring>
 using namespace std;
 
+#include <iostream>
+#include "utilidades.h"
+using namespace std;
 
-// --- Rotación a la derecha n bits ---
-unsigned char rotarDerecha(unsigned char byte, int n) {
-    return (byte >> n) | (byte << (8 - n));
+bool sonIguales(const unsigned char* buffer, int size, const char* cadena) {
+    int len = strlen(cadena);
+    if (size != len) return false;   // si no tienen mismo tamaño, no son iguales
+    return memcmp(buffer, cadena, len) == 0;
 }
-
-// --- Desencriptar un byte ---
-unsigned char desencriptarByte(unsigned char b, int n, unsigned char K) {
-    b=b^K;
-    return rotarDerecha(b, n);
-}
-
-// --- Verificar si 3 bytes son RLE válidos ---
-bool esRLEValido(unsigned char b1, unsigned char b2, unsigned char b3) {
-    unsigned char cantidad = b2; // segundo byte = cantidad
-    if (cantidad == 0) return false; // no puede ser cero
-    // b3 es el caracter, aceptamos cualquier valor ASCII visible o al menos imprimible
-    if (b3 < 32 || b3 > 126) return false;
-    return true;
-}
-
-// --- Verificar si 3 bytes son LZ78 válidos ---
-bool esLZ78Valido(unsigned char b1, unsigned char b2, unsigned char b3, int entradasActuales) {
-    int prefijo = (b1 << 8) | b2;
-    if (prefijo > entradasActuales) return false; // no puede referenciar más allá del diccionario
-    if (b3 < 32 || b3 > 126) return false;       // caracter legible
-    return true;
-}
-
 int main() {
     int size=0;
+    int sizePista=0;
     int cont1=0;
     int cont2=0;
     int clave=90;
     int n=3;
     int outSize=0;
     unsigned char* buffer = leerArchivo("C:/Users/57312/Desktop/jhacasky/Universidad/2025-2/datasetDesarrollo/datasetDesarrollo/Encriptado4.txt", size);
+    unsigned char* pista = leerArchivo("C:/Users/57312/Desktop/jhacasky/Universidad/2025-2/datasetDesarrollo/datasetDesarrollo/pista4.txt", sizePista);
 
     if (buffer != nullptr) {
         std::cout << "Archivo leído correctamente. Tamaño: " << size << " bytes." << std::endl;
     }
+      encontrarNKM(buffer,pista, size,  sizePista);
+/*
     // XOR
     unsigned char* xorResult = aplicarXOR(buffer, size, clave);
 
@@ -53,43 +39,31 @@ int main() {
 
     unsigned char* finalText = descomprimirRLE(rotResult, size, outSize);
     delete[] rotResult;
+    // --- Prueba 1: Contenido encontrado ---
+    int resultado1 = esta_contenido(finalText, outSize, pista, sizePista);
+
+    if (resultado1 != -1) {
+        std::cout << "Prueba 1: Sub-secuencia encontrada en el indice: " << resultado1 << "\n";
+    } else {
+        std::cout << "Prueba 1: Sub-secuencia NO encontrada.\n";
+    }
+
     cout<<"Mensaje descomprimido"<<endl;
-    for (int n = 0; n <= outSize; n++){
+    for (int n = resultado1; n < sizePista+resultado1; n++){
         cout<<finalText[n];
     }
     cout<<endl;
+    const char* textoEsperado = "lamontanaselevacasascuidadasmontesbosquesrioslagosanimalessilvestrespajarosvolandoarbustosfloresherbasiluminapaisajesnaturalesconsolazamientoalrededordelmundoaventurasincreiblesexploradoresviajanporterritoriosremotosdescubriendosorprendentesmisterioshistoricoscivilizacionesantiguastesorosocultosbibliotecasperdidasartefactosantiguoshumanidadeshistoriassorprendentesrelatoslegendasleyendasfantasmasespiritusencantamientosmagicosbrujeriamagianaturalezapoderosasenergiassecretasproteccionguardianesantiguossantuariosritualesmisteriossecretoselementosnaturalescielostaraleslucesestrelladaslunallamadavientoaguafuegohumotierraalientabosquesanimalesavespecesplantassilvestresherbascultivosfrutalesverdurashortalizasolorventosolesplegadolluviasonrisasemocionaventurexploraciondescubrimientoinmensidadpaisajehermosoterrenosdesconocidosnarracionescuentosfantasticosmaravillososincreiblesrealidadimaginacionhistoriasleyendasemocionpasionesentusiasmosabercuriosidadaprendizajeexperienciasviajesmundoaventurasdescubrimientosconocimientosorprendentesinteraccionespersonalesamistadfamiliaresrelacionesafectivasemocionales";
+
+    if (sonIguales(finalText, outSize, textoEsperado)) {
+        std::cout << "Las cadenas son IGUALES " << std::endl;
+    } else {
+        std::cout << "Las cadenas son DIFERENTES " << std::endl;
+    }
 
     delete[] buffer;
     delete[] finalText;
-    /*
-    // Probar todas las combinaciones de n y K
-    for (int n = 1; n <= 7; n++) {
-        for (int K = 0; K < 256; K++) {
-            unsigned char d0 = desencriptarByte(buffer[0], n, K);
-            unsigned char d1 = desencriptarByte(buffer[1], n, K);
-            unsigned char d2 = desencriptarByte(buffer[2], n, K);
-            unsigned char d3 = desencriptarByte(buffer[3], n, K);
-            unsigned char d4 = desencriptarByte(buffer[4], n, K);
-            unsigned char d5 = desencriptarByte(buffer[5], n, K);
-
-            // Verificar como RLE
-            if (esRLEValido(d0, d1, d2) && esRLEValido(d3, d4, d5)) {
-               // std::cout << "Posible RLE con n=" << n << ", K=" << K << std::endl;
-                cont1=cont1+1;
-
-            }
-
-            // Verificar como LZ78
-            // Entradas actuales al inicio = 0
-            if (esLZ78Valido(d0, d1, d2, 0) && esLZ78Valido(d3, d4, d5, 1)) {
-                std::cout << "Posible LZ78 con n=" << n << ", K=" << K << std::endl;
-                cont2=cont2+1;
-
-            }
-        }
-    }
-    cout<<"posibles RLE: "<<cont1<<endl;
-    cout<<"posibles LZ78: "<<cont2<<endl;
-*/
+ */
     return 0;
 }
+

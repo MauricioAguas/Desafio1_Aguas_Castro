@@ -13,8 +13,8 @@ unsigned char* descomprimirRLE(unsigned char* buffer, int size, int& outSize) {
         total += cantidad;
     }
     // Reservar memoria para salida
-    unsigned char* salida = new unsigned char[total-1];
-    outSize = total-1;
+    unsigned char* salida = new unsigned char[total];
+    outSize = total;
     // Paso 2: reconstruir
     int pos = 0;
     for (int i = 0; i < size; i += 3) {
@@ -123,3 +123,38 @@ unsigned char* leerArchivo(const char* nombre, int& size) {
 
     return buffer;
 }
+int esta_contenido(const unsigned char* contenedor, int tam_contenedor,
+                   const unsigned char* contenido, int tam_contenido) {
+
+    // Si el contenido es más grande que el contenedor, no puede estar contenido.
+    if (tam_contenido > tam_contenedor) {
+        return -1; // -1 indica que no se encontró.
+    }
+    // Si el contenido está vacío, se considera que está "contenido" al inicio.
+    if (tam_contenido == 0) {
+        return 0; // 0 indica que se encontró en el índice 0.
+    }
+
+    // El bucle externo recorre el 'contenedor' hasta la última posición
+    // donde aún cabe el 'contenido'.
+    for (int i = 0; i <= tam_contenedor - tam_contenido; ++i) {
+        int j = 0; // Índice para el arreglo 'contenido'.
+
+        // El bucle interno compara la sub-secuencia.
+        // Comienza a comparar desde 'contenedor[i]' con 'contenido[0]'.
+        for (j = 0; j < tam_contenido; ++j) {
+            if (contenedor[i + j] != contenido[j]) {
+                break; // Si no coinciden, salta del bucle interno.
+            }
+        }
+
+        // Si el bucle interno terminó porque j llegó hasta tam_contenido,
+        // significa que todos los caracteres coincidieron.
+        if (j == tam_contenido) {
+            return i; // Se encontró la sub-secuencia, devuelve el índice inicial.
+        }
+    }
+
+    return -1; // Si el bucle externo termina, no se encontró la sub-secuencia.
+}
+

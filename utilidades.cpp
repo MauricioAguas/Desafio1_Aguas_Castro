@@ -5,7 +5,7 @@ using namespace std;
 
 // ==================== RLE ====================
 // Descomprime un buffer usando RLE (ternas: [basura][cantidad][caracter])
-char* descomprimirRLE(unsigned char* buffer, int size, int& outSize) {
+unsigned char* descomprimirRLE(unsigned char* buffer, int size, int& outSize) {
     int total = 0;
     // Paso 1: calcular tamaño del mensaje descomprimido
     for (int i = 0; i < size; i += 3) {
@@ -13,8 +13,8 @@ char* descomprimirRLE(unsigned char* buffer, int size, int& outSize) {
         total += cantidad;
     }
     // Reservar memoria para salida
-    char* salida = new char[total];
-    outSize = total;
+    unsigned char* salida = new unsigned char[total-1];
+    outSize = total-1;
     // Paso 2: reconstruir
     int pos = 0;
     for (int i = 0; i < size; i += 3) {
@@ -29,7 +29,7 @@ char* descomprimirRLE(unsigned char* buffer, int size, int& outSize) {
 
 // ==================== LZ78 ====================
 // Descomprime un buffer usando LZ78 (ternas: [indice_bajo][indice_alto][caracter])
-char* descomprimirLZ78(unsigned char* buffer, int size, int& outSize) {
+unsigned char* descomprimirLZ78(unsigned char* buffer, int size, int& outSize) {
     if (size % 3 != 0) {
         cout << "Error: LZ78 data debe ser multiplo de 3 bytes" << endl;
         outSize = 0;
@@ -48,7 +48,7 @@ char* descomprimirLZ78(unsigned char* buffer, int size, int& outSize) {
     }
 
     // Buffer resultado (estimacion conservadora: 4x el tamaño)
-    char* salida = new char[size * 4];
+    unsigned char* salida = new unsigned char[size * 4];
     int pos = 0;
 
     // Procesar cada entrada LZ78
@@ -117,18 +117,24 @@ char* descomprimirLZ78(unsigned char* buffer, int size, int& outSize) {
 }
 
 // ==================== ROTACIÓN ====================
-void rotarArregloDerecha(unsigned char* in, unsigned char* out, int size, int n) {
+unsigned char*  rotarArregloDerecha(unsigned char* in, int size, int n) {
+    unsigned char* out = new unsigned char[size];
     for (int i = 0; i < size; i++) {
         unsigned char b = in[i];
         out[i] = (b >> n) | (b << (8 - n)); // rotación circular en el byte
     }
+    return out;
 }
 
 // ==================== XOR ====================
-void aplicarXOR(unsigned char* buffer, int size, unsigned char clave) {
+unsigned char* aplicarXOR(unsigned char* buffer, int size, unsigned char clave) {
+    unsigned char* out = new unsigned char[size];
     for (int i = 0; i < size; i++) {
-        buffer[i] ^= clave;
+        unsigned char b = buffer[i];
+        b=b^clave;
+        out[i] = b;
     }
+    return out;
 }
 
 // ==================== ARCHIVO ====================

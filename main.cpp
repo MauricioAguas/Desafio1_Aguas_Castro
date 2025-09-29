@@ -13,13 +13,34 @@ bool sonIguales(const unsigned char* buffer, int size, const char* cadena) {
     if (size != len) return false;   // si no tienen mismo tamaño, no son iguales
     return memcmp(buffer, cadena, len) == 0;
 }
+//validacion de numero de archivos
+int solicitarNumeroArchivos() {
+    int numeroArchivos;
+
+    while (true) {
+        cout << "¿Cuántos archivos desea desencriptar? (1-4): ";
+        cin >> numeroArchivos;
+
+        // Verificar si la entrada es válida
+        if (cin.fail()) {
+            cout << " Error: Debe ingresar un número entero." << endl;
+            cin.clear();         // Limpiar el estado de error
+            cin.ignore(1000, '\n'); // Ignorar caracteres en buffer
+        } else if (numeroArchivos < 1 ) {
+            cout << " Error: El número debe ser mayor a 0" << endl;
+        } else {
+            cout << " Entrada válida: " << numeroArchivos << " archivo(s)" << endl;
+            return numeroArchivos;
+        }
+        cout << endl; // Línea en blanco
+    }
+}
+
 int main() {
     int size=0;
     int sizePista=0;
     int outSize=0;
-    int N;
-    cout << "Anote la cantidad de archivos a desencriptar: ";
-    cin >> N;
+    int N=solicitarNumeroArchivos();
 
     for (int i = 1; i <= N; i++) {
         // Construir nombre de archivo dinámicamente

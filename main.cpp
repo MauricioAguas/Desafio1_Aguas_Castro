@@ -18,7 +18,7 @@ int solicitarNumeroArchivos() {
     int numeroArchivos;
 
     while (true) {
-        cout << "¿Cuántos archivos desea desencriptar? (1-4): ";
+        cout << "¿Cuantos archivos desea desencriptar?: ";
         cin >> numeroArchivos;
 
         // Verificar si la entrada es válida
@@ -29,7 +29,7 @@ int solicitarNumeroArchivos() {
         } else if (numeroArchivos < 1 ) {
             cout << " Error: El número debe ser mayor a 0" << endl;
         } else {
-            cout << " Entrada válida: " << numeroArchivos << " archivo(s)" << endl;
+            cout << " Entrada valida: " << numeroArchivos << " archivo(s)" << endl;
             return numeroArchivos;
         }
         cout << endl; // Línea en blanco
@@ -44,10 +44,10 @@ int main() {
 
     for (int i = 1; i <= N; i++) {
         // Construir nombre de archivo dinámicamente
-        std::ostringstream encriptadoPath;
+        ostringstream encriptadoPath;
         encriptadoPath << "C:/Users/57312/Desktop/jhacasky/Universidad/2025-2/datasetDesarrollo/datasetDesarrollo/Encriptado" << i << ".txt";
 
-        std::ostringstream pistaPath;
+        ostringstream pistaPath;
         pistaPath << "C:/Users/57312/Desktop/jhacasky/Universidad/2025-2/datasetDesarrollo/datasetDesarrollo/pista" << i << ".txt";
 
         int size = 0, sizePista = 0;
@@ -55,7 +55,7 @@ int main() {
         unsigned char* pista = leerArchivo(pistaPath.str().c_str(), sizePista);
 
         if (buffer != nullptr) {
-            std::cout << "Archivo " << i << " leído correctamente. Tamaño: " << size << " bytes." << std::endl;
+            cout << "Archivo " << i << " leido correctamente. Tamano: " << size << " bytes." << std::endl;
         }
 
         encontrarNKM(buffer, pista, size, sizePista);

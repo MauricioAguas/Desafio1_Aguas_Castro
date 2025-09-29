@@ -59,6 +59,8 @@ void encontrarNKM(unsigned char* buffer,unsigned char* pista, int size, int size
                 if(esta_contenido(finalText, outSize,pista, sizePista)!=-1){
                     num=n;
                     clave=k;
+                    guardarResultado("C:/Users/57312/Desktop/jhacasky/Universidad/2025-2/datasetDesarrollo/datasetDesarrollo/Resultado.txt",finalText,outSize,num,clave,0);
+                    delete[]finalText;
                     ya=true;
                     break;
                 }
@@ -81,14 +83,14 @@ void encontrarNKM(unsigned char* buffer,unsigned char* pista, int size, int size
                     num=n;
                     clave=k;
                     ya=true;
+                    guardarResultado("C:/Users/57312/Desktop/jhacasky/Universidad/2025-2/datasetDesarrollo/datasetDesarrollo/Resultado.txt",finalText,outSize,num,clave,1);
+                    delete[]finalText;
                     break;
                 }
 
             }
         }
         if(ya){
-            cout<<"se uso n= "<<num<<endl;
-            cout<<"se uso la clave="<<clave<<endl;
             break;
 
     }

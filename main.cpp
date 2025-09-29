@@ -1,11 +1,11 @@
 #include <iostream>
-#include "utilidades.h"
-#include "busqueda.h"
-#include <cstring>
-using namespace std;
-
+#include <fstream>
 #include <iostream>
 #include "utilidades.h"
+#include "busqueda.h"
+#include <sstream>   // para ostringstream
+#include <string>    // para std::string
+#include <cstring>
 using namespace std;
 
 bool sonIguales(const unsigned char* buffer, int size, const char* cadena) {
@@ -16,54 +16,29 @@ bool sonIguales(const unsigned char* buffer, int size, const char* cadena) {
 int main() {
     int size=0;
     int sizePista=0;
-    int cont1=0;
-    int cont2=0;
-    int clave=90;
-    int n=3;
     int outSize=0;
-    unsigned char* buffer = leerArchivo("C:/Users/57312/Desktop/jhacasky/Universidad/2025-2/datasetDesarrollo/datasetDesarrollo/Encriptado4.txt", size);
-    unsigned char* pista = leerArchivo("C:/Users/57312/Desktop/jhacasky/Universidad/2025-2/datasetDesarrollo/datasetDesarrollo/pista4.txt", sizePista);
+    int N;
+    cout << "Anote la cantidad de archivos a desencriptar: ";
+    cin >> N;
 
-    if (buffer != nullptr) {
-        std::cout << "Archivo leído correctamente. Tamaño: " << size << " bytes." << std::endl;
+    for (int i = 1; i <= N; i++) {
+        // Construir nombre de archivo dinámicamente
+        std::ostringstream encriptadoPath;
+        encriptadoPath << "C:/Users/57312/Desktop/jhacasky/Universidad/2025-2/datasetDesarrollo/datasetDesarrollo/Encriptado" << i << ".txt";
+
+        std::ostringstream pistaPath;
+        pistaPath << "C:/Users/57312/Desktop/jhacasky/Universidad/2025-2/datasetDesarrollo/datasetDesarrollo/pista" << i << ".txt";
+
+        int size = 0, sizePista = 0;
+        unsigned char* buffer = leerArchivo(encriptadoPath.str().c_str(), size);
+        unsigned char* pista = leerArchivo(pistaPath.str().c_str(), sizePista);
+
+        if (buffer != nullptr) {
+            std::cout << "Archivo " << i << " leído correctamente. Tamaño: " << size << " bytes." << std::endl;
+        }
+
+        encontrarNKM(buffer, pista, size, sizePista);
     }
-      encontrarNKM(buffer,pista, size,  sizePista);
-/*
-    // XOR
-    unsigned char* xorResult = aplicarXOR(buffer, size, clave);
-
-    // Rotación
-    unsigned char* rotResult = rotarArregloDerecha(xorResult, size, n);
-    delete[] xorResult;
-    // Descompresión
-
-    unsigned char* finalText = descomprimirRLE(rotResult, size, outSize);
-    delete[] rotResult;
-    // --- Prueba 1: Contenido encontrado ---
-    int resultado1 = esta_contenido(finalText, outSize, pista, sizePista);
-
-    if (resultado1 != -1) {
-        std::cout << "Prueba 1: Sub-secuencia encontrada en el indice: " << resultado1 << "\n";
-    } else {
-        std::cout << "Prueba 1: Sub-secuencia NO encontrada.\n";
-    }
-
-    cout<<"Mensaje descomprimido"<<endl;
-    for (int n = resultado1; n < sizePista+resultado1; n++){
-        cout<<finalText[n];
-    }
-    cout<<endl;
-    const char* textoEsperado = "lamontanaselevacasascuidadasmontesbosquesrioslagosanimalessilvestrespajarosvolandoarbustosfloresherbasiluminapaisajesnaturalesconsolazamientoalrededordelmundoaventurasincreiblesexploradoresviajanporterritoriosremotosdescubriendosorprendentesmisterioshistoricoscivilizacionesantiguastesorosocultosbibliotecasperdidasartefactosantiguoshumanidadeshistoriassorprendentesrelatoslegendasleyendasfantasmasespiritusencantamientosmagicosbrujeriamagianaturalezapoderosasenergiassecretasproteccionguardianesantiguossantuariosritualesmisteriossecretoselementosnaturalescielostaraleslucesestrelladaslunallamadavientoaguafuegohumotierraalientabosquesanimalesavespecesplantassilvestresherbascultivosfrutalesverdurashortalizasolorventosolesplegadolluviasonrisasemocionaventurexploraciondescubrimientoinmensidadpaisajehermosoterrenosdesconocidosnarracionescuentosfantasticosmaravillososincreiblesrealidadimaginacionhistoriasleyendasemocionpasionesentusiasmosabercuriosidadaprendizajeexperienciasviajesmundoaventurasdescubrimientosconocimientosorprendentesinteraccionespersonalesamistadfamiliaresrelacionesafectivasemocionales";
-
-    if (sonIguales(finalText, outSize, textoEsperado)) {
-        std::cout << "Las cadenas son IGUALES " << std::endl;
-    } else {
-        std::cout << "Las cadenas son DIFERENTES " << std::endl;
-    }
-
-    delete[] buffer;
-    delete[] finalText;
- */
     return 0;
 }
 

@@ -1,6 +1,7 @@
 #include "utilidades.h"
 #include <iostream>
 #include <fstream>
+
 using namespace std;
 
 // ==================== RLE ====================
@@ -27,7 +28,7 @@ unsigned char* descomprimirRLE(unsigned char* buffer, int size, int& outSize) {
     return salida;
 }
 
-// ==================== LZ78 ITERATIVO SIMPLE ====================
+// ==================== LZ78 Indice 16 bits ====================
 unsigned char* descomprimirLZ78(unsigned char* buffer, int size, int& outSize) {
     // Validar que el tamaño sea múltiplo de 3
     if (size % 3 != 0) {
@@ -35,51 +36,46 @@ unsigned char* descomprimirLZ78(unsigned char* buffer, int size, int& outSize) {
         outSize = 0;
         return nullptr;
     }
-    
+
     // Buffer de salida (estimación conservadora)
     unsigned char* salida = new unsigned char[size * 3];
     outSize = 0;
-    
+
     // Procesar cada entrada de 3 bytes
     for (int i = 0; i < size; i += 3) {
-        unsigned char separador = buffer[i];     // Primer byte (basura)
-        unsigned char indice = buffer[i + 1];   // Segundo byte (índice)
-        unsigned char caracter = buffer[i + 2]; // Tercer byte (carácter)
-        
-        // Array temporal para la secuencia
+        unsigned char byteAlto = buffer[i];      // Primer byte (parte alta)
+        unsigned char byteBajo = buffer[i + 1];  // Segundo byte (parte baja)
+        unsigned char caracter = buffer[i + 2];  // Tercer byte (carácter)
+        unsigned int indice = (unsigned int)byteAlto * 256 + (unsigned int)byteBajo;
         unsigned char secuencia[500];
         int secuenciaLen = 0;
-        
-        // Recorrer hacia atrás siguiendo los índices
-        unsigned char indiceActual = indice;
+
+        // Recorrer hacia atrás siguiendo los índices 
+        unsigned int indiceActual = indice; 
         while (indiceActual != 0) {
-            // Calcular la posición en el buffer
-            int posicion = (indiceActual * 3) - 3;
-            
-            // Validar posición
-            if (posicion < 0 || posicion + 2 >= size) {
+            if (indiceActual > (unsigned int)(i / 3) || (indiceActual * 3) > (unsigned int)size) {
                 delete[] salida;
+                outSize = 0;
                 return nullptr;
             }
-            
-            // Obtener carácter y índice anterior
-            unsigned char caracterAnterior = buffer[posicion + 2];
-            unsigned char indiceAnterior = buffer[posicion + 1];
-            
-            // Guardar en secuencia
+            int posicion = (indiceActual * 3) - 3;
+            unsigned char caracterAnterior = buffer[posicion + 2];     
+            unsigned char byteAltoAnterior = buffer[posicion];
+            unsigned char byteBajoAnterior = buffer[posicion + 1];
+            unsigned int indiceAnterior = (unsigned int)byteAltoAnterior * 256 + (unsigned int)byteBajoAnterior;
+
+            // Guardar en secuencia 
             secuencia[secuenciaLen++] = caracterAnterior;
             indiceActual = indiceAnterior;
         }
-        
-        // Copiar en orden correcto (reverso)
+        // Copiar en orden correcto - reverso 
         for (int j = secuenciaLen - 1; j >= 0; j--) {
             salida[outSize++] = secuencia[j];
         }
-        
-        // Agregar carácter actual
+        // Agregar carácter actual (
         salida[outSize++] = caracter;
     }
-    
+
     salida[outSize] = '\0';
     return salida;
 }
@@ -104,25 +100,7 @@ unsigned char* aplicarXOR(unsigned char* buffer, int size, unsigned char clave) 
     }
     return out;
 }
-
-// ==================== ARCHIVO ====================
-unsigned char* leerArchivo(const char* nombre, int& size) {
-    std::ifstream file(nombre, std::ios::binary | std::ios::ate);
-    if (!file.is_open()) {
-        std::cerr << "Error abriendo archivo: " << nombre << std::endl;
-        size = 0;
-        return nullptr;
-    }
-
-    size = file.tellg();
-    file.seekg(0, std::ios::beg);
-
-    unsigned char* buffer = new unsigned char[size];
-    file.read(reinterpret_cast<char*>(buffer), size);
-    file.close();
-
-    return buffer;
-}
+//=========COMPARAR PISTA===========
 int esta_contenido(const unsigned char* contenedor, int tam_contenedor,
                    const unsigned char* contenido, int tam_contenido) {
 
@@ -158,3 +136,49 @@ int esta_contenido(const unsigned char* contenedor, int tam_contenedor,
     return -1; // Si el bucle externo termina, no se encontró la sub-secuencia.
 }
 
+
+// ==================== ARCHIVO ====================
+unsigned char* leerArchivo(const char* nombre, int& size) {
+    std::ifstream file(nombre, std::ios::binary | std::ios::ate);
+    if (!file.is_open()) {
+        std::cerr << "Error abriendo archivo: " << nombre << std::endl;
+        size = 0;
+        return nullptr;
+    }
+
+    size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    unsigned char* buffer = new unsigned char[size];
+    file.read(reinterpret_cast<char*>(buffer), size);
+    file.close();
+
+    return buffer;
+}
+void guardarResultado(const char* nombreArchivo,
+                         const unsigned char* buffer, int size,
+                         int n, int clave, int met) {
+    if (buffer == nullptr || size <= 0) {
+        std::cerr << "Error: no hay datos para guardar." << std::endl;
+        return;
+    }
+
+    // Abrir en modo append para no sobrescribir
+    std::ofstream file(nombreArchivo, std::ios::app);
+    if (!file.is_open()) {
+        std::cerr << "Error: no se pudo abrir el archivo " << nombreArchivo << std::endl;
+        return;
+    }
+    if(met==0){
+        file << "Rotacion: " << n << " | Clave: " << "0x" << std::hex << std::uppercase << clave<<" | Metodo usado: RLE" <<"\n";}
+    else
+        {file << "Rotacion: " << n << " | Clave: " << "0x" << std::hex << std::uppercase << clave <<" | Metodo usado: LZ78" <<"\n";}
+        file.write(reinterpret_cast<const char*>(buffer), size);
+        file << "\n----------------------------------------\n";
+
+        file.close();
+
+        std::cout << "Resultado agregado a " << nombreArchivo << std::endl;
+
+
+}
